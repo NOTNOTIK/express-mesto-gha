@@ -3,30 +3,41 @@ const Card = require("../models/card");
 module.exports.getCards = async (req, res) => {
   try {
     const cards = await Card.find({});
-    res.status(200).send(cards);
+    return res.status(200).json(cards);
   } catch (err) {
-    return res.status(500).send(err.message);
+    if (err.message === "notFoundError") {
+      return res.status(404).json(err.message);
+    } else {
+      return res.status(500).json({ message: "На сервере произошла ошибка" });
+    }
   }
 };
 module.exports.deleteCard = async (req, res) => {
   try {
     const card = await Card.findByIdAndDelete(req.params.cardId);
     if (!card) {
-      res.status(404).send({ message: "Карточки с таким ID нет" });
-      return;
+      return res.status(404).json({ message: "Карточки с таким ID нет" });
     }
-    res.send({ message: "Карточка удалена" });
+    return res.json({ message: "Карточка удалена" });
   } catch (err) {
-    return res.status(500).send({ message: err.message });
+    if (err.message === "notFoundError") {
+      return res.status(404).json(err.message);
+    } else {
+      return res.status(500).json({ message: "На сервере произошла ошибка" });
+    }
   }
 };
 module.exports.createCard = async (req, res) => {
   try {
     const { name, link } = req.body;
     const card = await Card.create({ name, link, owner: req.user._id });
-    res.status(201).send(card);
+    return res.status(201).json(card);
   } catch (err) {
-    return res.status(500).send(err.message);
+    if (err.message === "notFoundError") {
+      return res.status(404).json(err.message);
+    } else {
+      return res.status(500).json({ message: "На сервере произошла ошибка" });
+    }
   }
 };
 module.exports.likeCard = async (req, res) => {
@@ -36,14 +47,13 @@ module.exports.likeCard = async (req, res) => {
       { $addToSet: { likes: req.user._id } },
       { new: true }
     );
-    res.send(card);
+    return res.json(card);
   } catch (err) {
-    if (err.name === "ValidationError") {
-      res.status(400).send({ message: err.message });
+    if (err.message === "notFoundError") {
+      return res.status(404).json(err.message);
     } else {
-      res.status(404).send({ message: "Произошла ошибка" });
+      return res.status(500).json({ message: "На сервере произошла ошибка" });
     }
-    res.status(500).send({ message: "На сервере произошла ошибка" });
   }
 };
 
@@ -54,14 +64,13 @@ module.exports.dislikeCard = async (req, res) => {
       { $pull: { likes: req.user._id } },
       { new: true }
     );
-    res.send(card);
+    return res.json(card);
   } catch (err) {
-    if (err.name === "ValidationError") {
-      res.status(400).send({ message: err.message });
+    if (err.message === "notFoundError") {
+      return res.status(404).json(err.message);
     } else {
-      res.status(404).send({ message: "Произошла ошибка" });
+      return res.status(500).json({ message: "На сервере произошла ошибка" });
     }
-    res.status(500).send({ message: "На сервере произошла ошибка" });
   }
 };
 
@@ -73,15 +82,12 @@ module.exports.updateUserAvatar = async (req, res) => {
       { avatar },
       { new: "true", runValidators: true }
     );
-    res.send(user);
+    return res.json(user);
   } catch (err) {
-    if (err.name === "ValidationError") {
-      res.status(400).send({ message: err.message });
+    if (err.message === "notFoundError") {
+      return res.status(404).json(err.message);
     } else {
-      res
-        .status(404)
-        .send({ message: "Пользователь по указанному ID не нйден" });
+      return res.status(500).json({ message: "На сервере произошла ошибка" });
     }
-    res.status(500).send({ message: "На сервере произошла ошибка" });
   }
 };
