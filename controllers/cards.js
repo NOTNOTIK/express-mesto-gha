@@ -12,7 +12,7 @@ module.exports.deleteCard = (req, res) => {
   Card.findByIdAndDelete(req.params.id)
     .orFail()
     .then((card) => {
-      res.send({ data: card });
+      res.status(200).send(card);
     })
     .catch((err) => {
       if (err.name === "CastError") {
@@ -57,9 +57,17 @@ module.exports.likeCard = async (req, res) => {
     return res.json(card);
   } catch (err) {
     if (err.name === "CastError") {
-      return res.status(404).json({ message: "Uncorrect ID" });
+      res.status(400).send({
+        message: "Передан некорректный ID карточки",
+      });
+    } else if (err.name === "DocumentNotFoundError") {
+      res.status(404).send({
+        message: "Карточка с таким ID не найдена",
+      });
     } else {
-      return res.status(500).json({ message: "На сервере произошла ошибка" });
+      res.status(500).send({
+        message: `Произошла ошибка. Подробнее: ${err.message}`,
+      });
     }
   }
 };
@@ -74,9 +82,17 @@ module.exports.dislikeCard = async (req, res) => {
     return res.json(card);
   } catch (err) {
     if (err.name === "CastError") {
-      return res.status(404).json({ message: "Uncorrect ID" });
+      res.status(400).send({
+        message: "Передан некорректный ID карточки",
+      });
+    } else if (err.name === "DocumentNotFoundError") {
+      res.status(404).send({
+        message: "Карточка с таким ID не найдена",
+      });
     } else {
-      return res.status(500).json({ message: "На сервере произошла ошибка" });
+      res.status(500).send({
+        message: `Произошла ошибка. Подробнее: ${err.message}`,
+      });
     }
   }
 };
