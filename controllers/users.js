@@ -30,8 +30,6 @@ module.exports.createUser = async (req, res) => {
   } catch (err) {
     if (err.name === "ValidationError") {
       return res.status(400).json({ message: "Uncorrect ID" });
-    } else if (err.name === "NotFoundError") {
-      return res.status(404).json({ message: "ID not found" });
     } else {
       return res.status(500).json({ message: "На сервере произошла ошибка" });
     }
