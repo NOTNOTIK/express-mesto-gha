@@ -10,10 +10,10 @@ module.exports.getUsers = async (req, res) => {
 };
 
 module.exports.getUserById = (req, res) => {
-  User.findById(req.params._id)
+  User.findById(req.params.id)
     .orFail()
     .then((user) => {
-      return res.status(200).send(user);
+      res.status(200).send(user);
     })
     .catch((err) => {
       if (err.name === "CastError") {
@@ -31,7 +31,8 @@ module.exports.getUserById = (req, res) => {
       }
     });
 };
-module.exports.createUser = async (req, res) => {
+
+module.exports.createUser = (req, res) => {
   const { name, about, avatar } = req.body;
   User.create({ name, about, avatar })
     .then((user) => {
