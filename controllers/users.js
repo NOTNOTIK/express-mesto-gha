@@ -26,16 +26,16 @@ module.exports.getUserById = async (req, res) => {
 module.exports.createUser = async (req, res) => {
   const { name, about, avatar } = req.body;
   User.create({ name, about, avatar })
-    .then(() => {
-      return res.status(200).send({ data: user });
+    .then((user) => {
+      return res.status(200).json(user);
     })
     .catch((err) => {
       if (err.name === "ValidationError") {
-        return res.status(400).send({
+        return res.status(400).json({
           message: "Невалидные данные при создании пользователя",
         });
       } else {
-        return res.status(500).send({
+        return res.status(500).json({
           message: `Произошла ошибка. Подробнее: ${err.message}`,
         });
       }
