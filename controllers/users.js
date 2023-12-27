@@ -22,11 +22,20 @@ module.exports.getUserById = async (req, res) => {
     return res.status(500).json({ message: "На сервере произошла ошибка" });
   }
 };
-module.exports.createUser = (req, res) => {
+module.exports.createUser = async (req, res) => {
   const { name, about, avatar } = req.body;
-  User.create({ name, about, avatar })
-    .then((user) => res.status(201).json(user))
-    .catch((err) => res.status(500).json({ message: err.message }));
+  const user = await User.create({ name, about, avatar });
+  try {
+    return res.status(200).json(user);
+  } catch (err) {
+    if (err.name === "ValidationError") {
+      return res.status(400).json({ message: "Uncorrect ID" });
+    } else if (err.name === "NotFoundError") {
+      return res.status(404).json({ message: "ID not found" });
+    } else {
+      return res.status(500).json({ message: "На сервере произошла ошибка" });
+    }
+  }
 };
 module.exports.updateUser = async (req, res) => {
   try {

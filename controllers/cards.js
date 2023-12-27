@@ -11,12 +11,17 @@ module.exports.getCards = async (req, res) => {
 module.exports.deleteCard = async (req, res) => {
   try {
     const card = await Card.findByIdAndDelete(req.params.cardId);
-    if (!card) {
-      return res.status(404).json({ message: "Карточки с таким ID нет" });
-    }
     return res.json({ message: "Карточка удалена" });
   } catch (err) {
-    return res.status(500).json({ message: "На сервере произошла ошибка" });
+    if (!card) {
+      return res.status(400).send({
+        message: "Некорректный ID для удаления карточки",
+      });
+    } else if (err.name === "DocumentNotFoundError") {
+      return res.status(404).json({ message: "Карточки с таким ID нет" });
+    } else {
+      return res.status(500).json({ message: "На сервере произошла ошибка" });
+    }
   }
 };
 module.exports.createCard = async (req, res) => {
@@ -25,7 +30,13 @@ module.exports.createCard = async (req, res) => {
     const card = await Card.create({ name, link, owner: req.user._id });
     return res.status(201).json(card);
   } catch (err) {
-    return res.status(500).json({ message: "На сервере произошла ошибка" });
+    if (err.name === "ValidationError") {
+      return res.status(400).send({
+        message: "Невалидные данные при создании карточки",
+      });
+    } else {
+      return res.status(500).json({ message: "На сервере произошла ошибка" });
+    }
   }
 };
 module.exports.likeCard = async (req, res) => {
@@ -39,7 +50,7 @@ module.exports.likeCard = async (req, res) => {
   } catch (err) {
     if (err.name === "CastError") {
       return res.status(400).json({ message: "Uncorrect ID" });
-    } else if (err.name === "NotFoundError") {
+    } else if (err.name === "DocumentNotFoundError") {
       return res.status(404).json({ message: "ID not found" });
     } else {
       return res.status(500).json({ message: "На сервере произошла ошибка" });
