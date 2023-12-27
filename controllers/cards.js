@@ -10,7 +10,6 @@ module.exports.getCards = async (req, res) => {
 };
 module.exports.deleteCard = (req, res) => {
   Card.findByIdAndDelete(req.params.id)
-    .orFail()
     .then((card) => {
       res.status(200).send(card);
     })
