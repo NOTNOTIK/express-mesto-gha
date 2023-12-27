@@ -6,7 +6,7 @@ module.exports.getCards = async (req, res) => {
     return res.status(200).json(cards);
   } catch (err) {
     if (err.message === "notFoundError") {
-      return res.status(404).json(err.message);
+      return res.status(400).json(err.message);
     } else {
       return res.status(500).json({ message: "На сервере произошла ошибка" });
     }
@@ -21,7 +21,7 @@ module.exports.deleteCard = async (req, res) => {
     return res.json({ message: "Карточка удалена" });
   } catch (err) {
     if (err.message === "notFoundError") {
-      return res.status(404).json(err.message);
+      return res.status(400).json(err.message);
     } else {
       return res.status(500).json({ message: "На сервере произошла ошибка" });
     }
@@ -34,7 +34,7 @@ module.exports.createCard = async (req, res) => {
     return res.status(201).json(card);
   } catch (err) {
     if (err.message === "notFoundError") {
-      return res.status(404).json(err.message);
+      return res.status(400).json(err.message);
     } else {
       return res.status(500).json({ message: "На сервере произошла ошибка" });
     }
@@ -50,7 +50,7 @@ module.exports.likeCard = async (req, res) => {
     return res.json(card);
   } catch (err) {
     if (err.message === "notFoundError") {
-      return res.status(404).json(err.message);
+      return res.status(400).json(err.message);
     } else {
       return res.status(500).json({ message: "На сервере произошла ошибка" });
     }
@@ -67,7 +67,7 @@ module.exports.dislikeCard = async (req, res) => {
     return res.json(card);
   } catch (err) {
     if (err.message === "notFoundError") {
-      return res.status(404).json(err.message);
+      return res.status(400).json(err.message);
     } else {
       return res.status(500).json({ message: "На сервере произошла ошибка" });
     }
@@ -85,7 +85,7 @@ module.exports.updateUserAvatar = async (req, res) => {
     return res.json(user);
   } catch (err) {
     if (err.message === "notFoundError") {
-      return res.status(404).json(err.message);
+      return res.status(400).json(err.message);
     } else {
       return res.status(500).json({ message: "На сервере произошла ошибка" });
     }

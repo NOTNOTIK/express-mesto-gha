@@ -6,7 +6,7 @@ module.exports.getUsers = async (req, res) => {
     return res.status(200).json(users);
   } catch (err) {
     if (err.message === "notFoundError") {
-      return res.status(404).json(err.message);
+      return res.status(400).json(err.message);
     } else {
       return res.status(500).json({ message: "На сервере произошла ошибка" });
     }
@@ -20,7 +20,7 @@ module.exports.getUserById = async (req, res) => {
     return res.status(200).json(user);
   } catch (err) {
     if (err.message === "notFoundError") {
-      return res.status(404).json(err.message);
+      return res.status(400).json(err.message);
     } else {
       return res.status(500).json({ message: "На сервере произошла ошибка" });
     }
@@ -43,7 +43,7 @@ module.exports.updateUser = async (req, res) => {
     return res.json(user);
   } catch (err) {
     if (err.message === "notFoundError") {
-      return res.status(404).json(err.message);
+      return res.status(400).json(err.message);
     } else {
       return res.status(500).json({ message: "На сервере произошла ошибка" });
     }
@@ -61,7 +61,7 @@ module.exports.updateUserAvatar = async (req, res) => {
     return res.send(user);
   } catch (err) {
     if (err.message === "notFoundError") {
-      return res.status(404).json(err.message);
+      return res.status(400).json(err.message);
     } else {
       return res.status(500).json({ message: "На сервере произошла ошибка" });
     }
