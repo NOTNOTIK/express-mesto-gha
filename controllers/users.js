@@ -25,16 +25,21 @@ module.exports.getUserById = async (req, res) => {
 };
 module.exports.createUser = async (req, res) => {
   const { name, about, avatar } = req.body;
-  const user = await User.create({ name, about, avatar });
-  try {
-    return res.status(200).json(user);
-  } catch (err) {
-    if (err.name === "ValidationError") {
-      return res.status(400).json({ message: "Uncorrect ID" });
-    } else {
-      return res.status(500).json({ message: "На сервере произошла ошибка" });
-    }
-  }
+  User.create({ name, about, avatar })
+    .then(() => {
+      return res.status(200).send({ data: user });
+    })
+    .catch((err) => {
+      if (err.name === "ValidationError") {
+        return res.status(400).send({
+          message: "Невалидные данные при создании пользователя",
+        });
+      } else {
+        return res.status(500).send({
+          message: `Произошла ошибка. Подробнее: ${err.message}`,
+        });
+      }
+    });
 };
 module.exports.updateUser = async (req, res) => {
   try {
