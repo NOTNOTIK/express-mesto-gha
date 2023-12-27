@@ -5,29 +5,21 @@ module.exports.getUsers = async (req, res) => {
     const users = await User.find({});
     return res.status(200).json(users);
   } catch (err) {
-    if (err.name === "CastError") {
-      return res.status(400).json({ message: "Uncorrect ID" });
-    } else if (err.name === "NotFoundError") {
-      return res.status(404).json({ message: "ID not found" });
-    } else {
-      return res.status(500).json({ message: "Server error" });
-    }
+    return res.status(500).json({ message: "Server error" });
   }
 };
 
 module.exports.getUserById = async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
-
+    if (!user) {
+      return res
+        .status(404)
+        .send({ message: "Пользователь с таким ID не найден" });
+    }
     return res.status(200).json(user);
   } catch (err) {
-    if (err.name === "CastError") {
-      return res.status(400).json({ message: "Uncorrect ID" });
-    } else if (err.name === "NotFoundError") {
-      return res.status(404).json({ message: "ID not found" });
-    } else {
-      return res.status(500).json({ message: "Server error" });
-    }
+    return res.status(500).json({ message: "Server error" });
   }
 };
 module.exports.createUser = (req, res) => {
@@ -46,7 +38,7 @@ module.exports.updateUser = async (req, res) => {
     );
     return res.json(user);
   } catch (err) {
-    if (err.name === "CastError") {
+    if (err.name === "ValidationError") {
       return res.status(400).json({ message: "Uncorrect ID" });
     } else if (err.name === "NotFoundError") {
       return res.status(404).json({ message: "ID not found" });
@@ -66,7 +58,7 @@ module.exports.updateUserAvatar = async (req, res) => {
     );
     return res.send(user);
   } catch (err) {
-    if (err.name === "CastError") {
+    if (err.name === "ValidationError") {
       return res.status(400).json({ message: "Uncorrect ID" });
     } else if (err.name === "NotFoundError") {
       return res.status(404).json({ message: "ID not found" });
