@@ -9,19 +9,27 @@ module.exports.getUsers = async (req, res) => {
   }
 };
 
-module.exports.getUserById = async (req, res) => {
-  try {
-    const user = await User.findById(req.params.id);
-    return res.status(200).json(user);
-  } catch (err) {
-    if (err.name === "CastError") {
-      return res.status(400).json({ message: "Uncorrect ID" });
-    } else if (err.name === "DocumentNotFoundError") {
-      return res.status(404).json({ message: "ID not found" });
-    } else {
-      return res.status(500).json({ message: "На сервере произошла ошибка" });
-    }
-  }
+module.exports.getUserById = (req, res) => {
+  User.findById(req.params._id)
+    .orFail()
+    .then((user) => {
+      return res.status(200).send(user);
+    })
+    .catch((err) => {
+      if (err.name === "CastError") {
+        res.status(400).send({
+          message: "Передан некорректный ID",
+        });
+      } else if (err.name === "DocumentNotFoundError") {
+        res.status(404).send({
+          message: "Пользователь с таким ID не найден",
+        });
+      } else {
+        res.status(500).send({
+          message: `Произошла ошибка. Подробнее: ${err.message}`,
+        });
+      }
+    });
 };
 module.exports.createUser = async (req, res) => {
   const { name, about, avatar } = req.body;
@@ -69,7 +77,7 @@ module.exports.updateUserAvatar = async (req, res) => {
       { avatar },
       { new: "true", runValidators: true }
     );
-    return res.send(user);
+    return res.status(200).send(user);
   } catch (err) {
     if (err.name === "ValidationError") {
       return res.status(400).json({ message: "Uncorrect ID" });
