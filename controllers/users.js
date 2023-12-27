@@ -5,7 +5,7 @@ module.exports.getUsers = async (req, res) => {
     const users = await User.find({});
     return res.status(200).json(users);
   } catch (err) {
-    return res.status(500).json({ message: "Server error" });
+    return res.status(500).json({ message: "На сервере произошла ошибка" });
   }
 };
 
@@ -19,7 +19,7 @@ module.exports.getUserById = async (req, res) => {
     }
     return res.status(200).json(user);
   } catch (err) {
-    return res.status(500).json({ message: "Server error" });
+    return res.status(500).json({ message: "На сервере произошла ошибка" });
   }
 };
 module.exports.createUser = (req, res) => {
@@ -43,7 +43,7 @@ module.exports.updateUser = async (req, res) => {
     } else if (err.name === "NotFoundError") {
       return res.status(404).json({ message: "ID not found" });
     } else {
-      return res.status(500).json({ message: "Server error" });
+      return res.status(500).json({ message: "На сервере произошла ошибка" });
     }
   }
 };
@@ -63,7 +63,7 @@ module.exports.updateUserAvatar = async (req, res) => {
     } else if (err.name === "NotFoundError") {
       return res.status(404).json({ message: "ID not found" });
     } else {
-      return res.status(500).json({ message: "Server error" });
+      return res.status(500).json({ message: "На сервере произошла ошибка" });
     }
   }
 };

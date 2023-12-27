@@ -5,7 +5,7 @@ module.exports.getCards = async (req, res) => {
     const cards = await Card.find({});
     return res.status(200).json(cards);
   } catch (err) {
-    return res.status(500).json({ message: "Server error" });
+    return res.status(500).json({ message: "На сервере произошла ошибка" });
   }
 };
 module.exports.deleteCard = async (req, res) => {
@@ -16,11 +16,7 @@ module.exports.deleteCard = async (req, res) => {
     }
     return res.json({ message: "Карточка удалена" });
   } catch (err) {
-    if (err.name === "ValidationError") {
-      return res.status(400).json({ message: "Uncorrect ID" });
-    } else {
-      return res.status(500).json({ message: "Server error" });
-    }
+    return res.status(500).json({ message: "На сервере произошла ошибка" });
   }
 };
 module.exports.createCard = async (req, res) => {
@@ -32,7 +28,7 @@ module.exports.createCard = async (req, res) => {
     if (err.name === "ValidationError") {
       return res.status(400).json({ message: "Uncorrect ID" });
     } else {
-      return res.status(500).json({ message: "Server error" });
+      return res.status(500).json({ message: "На сервере произошла ошибка" });
     }
   }
 };
@@ -50,7 +46,7 @@ module.exports.likeCard = async (req, res) => {
     } else if (err.name === "NotFoundError") {
       return res.status(404).json({ message: "ID not found" });
     } else {
-      return res.status(500).json({ message: "Server error" });
+      return res.status(500).json({ message: "На сервере произошла ошибка" });
     }
   }
 };
@@ -69,7 +65,7 @@ module.exports.dislikeCard = async (req, res) => {
     } else if (err.name === "NotFoundError") {
       return res.status(404).json({ message: "ID not found" });
     } else {
-      return res.status(500).json({ message: "Server error" });
+      return res.status(500).json({ message: "На сервере произошла ошибка" });
     }
   }
 };
@@ -89,7 +85,7 @@ module.exports.updateUserAvatar = async (req, res) => {
     } else if (err.name === "NotFoundError") {
       return res.status(404).json({ message: "ID not found" });
     } else {
-      return res.status(500).json({ message: "Server error" });
+      return res.status(500).json({ message: "На сервере произошла ошибка" });
     }
   }
 };
