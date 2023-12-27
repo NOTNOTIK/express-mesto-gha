@@ -12,14 +12,15 @@ module.exports.getUsers = async (req, res) => {
 module.exports.getUserById = async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
-    if (!user) {
-      return res
-        .status(404)
-        .send({ message: "Пользователь с таким ID не найден" });
-    }
     return res.status(200).json(user);
   } catch (err) {
-    return res.status(500).json({ message: "На сервере произошла ошибка" });
+    if (err.name === "CastError") {
+      return res.status(400).json({ message: "Uncorrect ID" });
+    } else if (err.name === "DocumentNotFoundError") {
+      return res.status(404).json({ message: "ID not found" });
+    } else {
+      return res.status(500).json({ message: "На сервере произошла ошибка" });
+    }
   }
 };
 module.exports.createUser = async (req, res) => {
