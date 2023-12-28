@@ -57,7 +57,7 @@ module.exports.createCard = async (req, res) => {
 };
 
 //Я не понимаю, почему оно не проходит автотесты, почему мне вылетает ошибка 400 а не 404. хелп
-module.exports.likeCard = (req, res) => {
+module.exports.likeCard = async (req, res) => {
   /*try {
     const card = await Card.findByIdAndUpdate(
       req.params.cardId,
@@ -79,7 +79,7 @@ module.exports.likeCard = (req, res) => {
         .status(SERVER_ERROR)
         .json({ message: "На сервере произошла ошибка" });
     }
-  }*/
+  }
   const userId = req.user._id;
   Card.findByIdAndUpdate(
     req.params.cardId,
@@ -94,19 +94,42 @@ module.exports.likeCard = (req, res) => {
     })
     .catch((err) => {
       if (err.name === "CastError") {
-        res.status(400).send({
+        res.status(ERROR_CODE).send({
           message: "Передан некорректный ID карточки",
         });
       } else if (err.name === "DocumentNotFoundError") {
-        res.status(404).send({
+        res.status(ERROR_NOT_FOUND).send({
           message: "Карточка с таким ID не найдена",
         });
       } else {
-        res.status(500).send({
+        res.status(SERVER_ERROR).send({
           message: `Произошла ошибка. Подробнее: ${err.message}`,
         });
       }
     });
+    */
+  try {
+    const card = await Card.findByIdAndUpdate(
+      req.params.cardId,
+      { $addToSet: { likes: req.user._id } },
+      { new: true }
+    );
+    return res.status(OK).json(card);
+  } catch (err) {
+    if (err.name === "CastError") {
+      res.status(ERROR_CODE).send({
+        message: "Передан некорректный ID карточки",
+      });
+    } else if (err.name === "DocumentNotFoundError") {
+      res.status(ERROR_NOT_FOUND).send({
+        message: "Карточка с таким ID не найдена",
+      });
+    } else {
+      return res
+        .status(SERVER_ERROR)
+        .json({ message: "На сервере произошла ошибка" });
+    }
+  }
 };
 
 module.exports.dislikeCard = async (req, res) => {
@@ -131,32 +154,54 @@ module.exports.dislikeCard = async (req, res) => {
         .status(SERVER_ERROR)
         .json({ message: "На сервере произошла ошибка" });
     }
-  }*/
+  }
   const userId = req.user._id;
   Card.findByIdAndUpdate(
     req.params.cardId,
     { $pull: { likes: userId } },
     { new: true }
   )
-    .orFail()
     .then((card) => {
-      res.status(200).send({
+      res.status(OK).send({
         data: card,
       });
     })
     .catch((err) => {
       if (err.name === "CastError") {
-        res.status(400).send({
+        res.status(ERROR_CODE).send({
           message: "Передан некорректный ID карточки",
         });
       } else if (err.name === "DocumentNotFoundError") {
-        res.status(404).send({
+        res.status(ERROR_NOT_FOUND).send({
           message: "Карточка с таким ID не найдена",
         });
       } else {
-        res.status(500).send({
+        res.status(SERVER_ERROR).send({
           message: `Произошла ошибка. Подробнее: ${err.message}`,
         });
       }
-    });
+    });*/
+
+  try {
+    const card = await Card.findByIdAndUpdate(
+      req.params.cardId,
+      { $pull: { likes: req.user._id } },
+      { new: true }
+    );
+    return res.status(OK).json(card);
+  } catch (err) {
+    if (err.name === "CastError") {
+      return res.status(ERROR_CODE).send({
+        message: "Передан некорректный ID карточки",
+      });
+    } else if (err.name === "DocumentNotFoundError") {
+      res.status(ERROR_NOT_FOUND).send({
+        message: "Карточка с таким ID не найдена",
+      });
+    } else {
+      return res
+        .status(SERVER_ERROR)
+        .json({ message: "На сервере произошла ошибка" });
+    }
+  }
 };
