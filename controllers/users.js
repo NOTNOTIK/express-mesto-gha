@@ -63,7 +63,7 @@ module.exports.updateUser = async (req, res) => {
     );
     return res.status(OK).send(user);
   } catch (err) {
-    if (err.name === "ValidationError") {
+    if (err.name === "CastError") {
       return res.status(ERROR_CODE).json({ message: "Uncorrect ID" });
     } else if (err.name === "NotFoundError") {
       return res.status(ERROR_NOT_FOUND).json({ message: "ID not found" });
@@ -85,7 +85,7 @@ module.exports.updateUserAvatar = async (req, res) => {
     );
     return res.status(OK).send(user);
   } catch (err) {
-    if (err.name === "ValidationError") {
+    if (err.name === "CastError") {
       return res.status(ERROR_CODE).json({ message: "Uncorrect ID" });
     } else if (err.name === "NotFoundError") {
       return res.status(ERROR_NOT_FOUND).json({ message: "ID not found" });

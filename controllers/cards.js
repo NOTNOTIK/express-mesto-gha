@@ -18,12 +18,12 @@ module.exports.getCards = async (req, res) => {
   }
 };
 module.exports.deleteCard = (req, res) => {
-  Card.findByIdAndDelete(req.params.id)
+  Card.findByIdAndDelete(req.params.cardId)
     .then((card) => {
       return res.status(OK).json(card);
     })
     .catch((err) => {
-      if (err.name === "ValidationError") {
+      if (err.name === "CastError") {
         return res.status(ERROR_CODE).json({
           message: "Некорректный ID для удаления карточки",
         });
@@ -66,7 +66,7 @@ module.exports.likeCard = async (req, res) => {
     );
     return res.status(OK).json(card);
   } catch (err) {
-    if (err.name === "ValidationError") {
+    if (err.name === "CastError") {
       return res.status(ERROR_CODE).send({
         message: "Некорректный ID",
       });
@@ -91,7 +91,7 @@ module.exports.dislikeCard = async (req, res) => {
     );
     return res.status(OK).json(card);
   } catch (err) {
-    if (err.name === "ValidationError") {
+    if (err.name === "CastError") {
       return res.status(ERROR_CODE).send({
         message: "Некорректный ID",
       });
