@@ -23,7 +23,7 @@ module.exports.deleteCard = (req, res) => {
       return res.status(OK).json(card);
     })
     .catch((err) => {
-      if (err.name === "CastError") {
+      if (err.name === "ValidationError") {
         return res.status(ERROR_CODE).json({
           message: "Некорректный ID для удаления карточки",
         });
@@ -64,7 +64,7 @@ module.exports.likeCard = async (req, res) => {
       { $addToSet: { likes: req.user._id } },
       { new: true }
     );
-    return res.status(CREATED_OK).json(card);
+    return res.status(OK).json(card);
   } catch (err) {
     if (err.name === "ValidationError") {
       return res.status(ERROR_CODE).send({
