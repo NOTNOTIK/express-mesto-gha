@@ -1,11 +1,14 @@
+const { OK, SERVER_ERROR, ERROR_CODE, ERROR_NOT_FOUND } = require("../app");
 const User = require("../models/user");
 
 module.exports.getUsers = async (req, res) => {
   try {
     const users = await User.find({});
-    return res.status(200).json(users);
+    return res.status(OK).json(users);
   } catch (err) {
-    return res.status(500).json({ message: "На сервере произошла ошибка" });
+    return res
+      .status(SERVER_ERROR)
+      .json({ message: "На сервере произошла ошибка" });
   }
 };
 
@@ -13,21 +16,21 @@ module.exports.getUserById = (req, res) => {
   User.findById(req.params.id)
     .orFail()
     .then((user) => {
-      res.status(200).send(user);
+      res.status(OK).send(user);
     })
     .catch((err) => {
       if (err.name === "CastError") {
-        res.status(400).send({
+        res.status(ERROR_CODE).send({
           message: "Передан некорректный ID",
         });
       } else if (err.name === "DocumentNotFoundError") {
-        res.status(404).send({
+        res.status(ERROR_NOT_FOUND).send({
           message: "Пользователь с таким ID не найден",
         });
       } else {
-        res.status(500).send({
-          message: `Произошла ошибка. Подробнее: ${err.message}`,
-        });
+        return res
+          .status(SERVER_ERROR)
+          .json({ message: "На сервере произошла ошибка" });
       }
     });
 };
@@ -36,17 +39,17 @@ module.exports.createUser = (req, res) => {
   const { name, about, avatar } = req.body;
   User.create({ name, about, avatar })
     .then((user) => {
-      return res.status(200).json(user);
+      return res.status(OK).json(user);
     })
     .catch((err) => {
       if (err.name === "ValidationError") {
-        return res.status(400).json({
+        return res.status(ERROR_CODE).json({
           message: "Невалидные данные при создании пользователя",
         });
       } else {
-        return res.status(500).json({
-          message: `Произошла ошибка. Подробнее: ${err.message}`,
-        });
+        return res
+          .status(SERVER_ERROR)
+          .json({ message: "На сервере произошла ошибка" });
       }
     });
 };
@@ -61,11 +64,13 @@ module.exports.updateUser = async (req, res) => {
     return res.json(user);
   } catch (err) {
     if (err.name === "ValidationError") {
-      return res.status(400).json({ message: "Uncorrect ID" });
+      return res.status(ERROR_CODE).json({ message: "Uncorrect ID" });
     } else if (err.name === "NotFoundError") {
-      return res.status(404).json({ message: "ID not found" });
+      return res.status(ERROR_NOT_FOUND).json({ message: "ID not found" });
     } else {
-      return res.status(500).json({ message: "На сервере произошла ошибка" });
+      return res
+        .status(SERVER_ERROR)
+        .json({ message: "На сервере произошла ошибка" });
     }
   }
 };
@@ -78,14 +83,16 @@ module.exports.updateUserAvatar = async (req, res) => {
       { avatar },
       { new: "true", runValidators: true }
     );
-    return res.status(200).send(user);
+    return res.status(OK).send(user);
   } catch (err) {
     if (err.name === "ValidationError") {
-      return res.status(400).json({ message: "Uncorrect ID" });
+      return res.status(ERROR_CODE).json({ message: "Uncorrect ID" });
     } else if (err.name === "NotFoundError") {
-      return res.status(404).json({ message: "ID not found" });
+      return res.status(ERROR_NOT_FOUND).json({ message: "ID not found" });
     } else {
-      return res.status(500).json({ message: "На сервере произошла ошибка" });
+      return res
+        .status(SERVER_ERROR)
+        .json({ message: "На сервере произошла ошибка" });
     }
   }
 };

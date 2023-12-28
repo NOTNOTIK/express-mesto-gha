@@ -1,31 +1,40 @@
+const {
+  OK,
+  SERVER_ERROR,
+  ERROR_CODE,
+  ERROR_NOT_FOUND,
+  CREATED_OK,
+} = require("../app");
 const Card = require("../models/card");
 
 module.exports.getCards = async (req, res) => {
   try {
     const cards = await Card.find({});
-    return res.status(200).json(cards);
+    return res.status(OK).json(cards);
   } catch (err) {
-    return res.status(500).json({ message: "На сервере произошла ошибка" });
+    return res
+      .status(SERVER_ERROR)
+      .json({ message: "На сервере произошла ошибка" });
   }
 };
 module.exports.deleteCard = (req, res) => {
   Card.findByIdAndDelete(req.params.id)
     .then((card) => {
-      res.status(200).send(card);
+      res.status(OK).send(card);
     })
     .catch((err) => {
       if (err.name === "CastError") {
-        res.status(400).send({
+        res.status(ERROR_CODE).send({
           message: "Некорректный ID для удаления карточки",
         });
       } else if (err.name === "DocumentNotFoundError") {
-        res.status(404).send({
+        return res.status(ERROR_NOT_FOUND).send({
           message: "Карточка с таким ID не найдена",
         });
       } else {
-        res.status(500).send({
-          message: `Произошла ошибка. Подробнее: ${err.message}`,
-        });
+        return res
+          .status(SERVER_ERROR)
+          .json({ message: "На сервере произошла ошибка" });
       }
     });
 };
@@ -33,14 +42,16 @@ module.exports.createCard = async (req, res) => {
   try {
     const { name, link } = req.body;
     const card = await Card.create({ name, link, owner: req.user._id });
-    return res.status(201).json(card);
+    return res.status(CREATED_OK).json(card);
   } catch (err) {
     if (err.name === "ValidationError") {
-      return res.status(400).send({
+      return res.status(ERROR_CODE).send({
         message: "Невалидные данные при создании карточки",
       });
     } else {
-      return res.status(500).json({ message: "На сервере произошла ошибка" });
+      return res
+        .status(SERVER_ERROR)
+        .json({ message: "На сервере произошла ошибка" });
     }
   }
 };
@@ -56,17 +67,17 @@ module.exports.likeCard = async (req, res) => {
     return res.json(card);
   } catch (err) {
     if (err.name === "CastError") {
-      res.status(400).send({
+      res.status(ERROR_CODE).send({
         message: "Передан некорректный ID карточки",
       });
     } else if (err.name === "DocumentNotFoundError") {
-      res.status(404).send({
+      res.status(ERROR_NOT_FOUND).send({
         message: "Карточка с таким ID не найдена",
       });
     } else {
-      res.status(500).send({
-        message: `Произошла ошибка. Подробнее: ${err.message}`,
-      });
+      return res
+        .status(SERVER_ERROR)
+        .json({ message: "На сервере произошла ошибка" });
     }
   }
 };
@@ -81,17 +92,17 @@ module.exports.dislikeCard = async (req, res) => {
     return res.json(card);
   } catch (err) {
     if (err.name === "CastError") {
-      res.status(400).send({
+      res.status(ERROR_CODE).send({
         message: "Передан некорректный ID карточки",
       });
     } else if (err.name === "DocumentNotFoundError") {
-      res.status(404).send({
+      res.status(ERROR_NOT_FOUND).send({
         message: "Карточка с таким ID не найдена",
       });
     } else {
-      res.status(500).send({
-        message: `Произошла ошибка. Подробнее: ${err.message}`,
-      });
+      return res
+        .status(SERVER_ERROR)
+        .json({ message: "На сервере произошла ошибка" });
     }
   }
 };

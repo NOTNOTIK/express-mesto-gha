@@ -2,7 +2,18 @@ const express = require("express");
 const mongoose = require("mongoose");
 const bodyParser = require("body-parser");
 const app = express();
-
+const ERROR_CODE = 400;
+const SERVER_ERROR = 500;
+const ERROR_NOT_FOUND = 404;
+const OK = 200;
+const CREATED_OK = 201;
+module.exports = {
+  ERROR_CODE,
+  SERVER_ERROR,
+  ERROR_NOT_FOUND,
+  OK,
+  CREATED_OK,
+};
 mongoose.connect("mongodb://127.0.0.1:27017/mestodb");
 
 app.use(bodyParser.json());
