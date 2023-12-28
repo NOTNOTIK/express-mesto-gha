@@ -64,9 +64,9 @@ module.exports.likeCard = (req, res) => {
     { $addToSet: { likes: userId } },
     { new: true }
   )
-
+    .orFail()
     .then((card) => {
-      res.status(OK).send({
+      res.status(200).send({
         data: card,
       });
     })
@@ -94,9 +94,9 @@ module.exports.dislikeCard = (req, res) => {
     { $pull: { likes: userId } },
     { new: true }
   )
-
+    .orFail()
     .then((card) => {
-      res.status(OK).send({
+      res.status(200).send({
         data: card,
       });
     })
