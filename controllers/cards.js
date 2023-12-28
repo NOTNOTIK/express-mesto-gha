@@ -70,7 +70,7 @@ module.exports.likeCard = async (req, res) => {
       return res.status(ERROR_CODE).send({
         message: "Некорректный ID",
       });
-    } else if (err.name === "DocumentNotFoundError") {
+    } else if (err.name === "NotFoundError") {
       return res.status(ERROR_NOT_FOUND).send({
         message: "Карточка с таким ID не найдена",
       });
@@ -95,7 +95,7 @@ module.exports.dislikeCard = async (req, res) => {
       return res.status(ERROR_CODE).send({
         message: "Некорректный ID",
       });
-    } else if (err.name === "DocumentNotFoundError") {
+    } else if (err.name === "NotFoundError") {
       return res.status(ERROR_NOT_FOUND).send({
         message: "Карточка с таким ID не найдена",
       });
