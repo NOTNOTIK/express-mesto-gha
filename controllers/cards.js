@@ -57,8 +57,8 @@ module.exports.createCard = async (req, res) => {
 };
 
 //Я не понимаю, почему оно не проходит автотесты, почему мне вылетает ошибка 400 а не 404. хелп
-module.exports.likeCard = async (req, res) => {
-  try {
+module.exports.likeCard = (req, res) => {
+  /*try {
     const card = await Card.findByIdAndUpdate(
       req.params.cardId,
       { $addToSet: { likes: req.user._id } },
@@ -79,11 +79,38 @@ module.exports.likeCard = async (req, res) => {
         .status(SERVER_ERROR)
         .json({ message: "На сервере произошла ошибка" });
     }
-  }
+  }*/
+  const userId = req.user._id;
+  Card.findByIdAndUpdate(
+    req.params.cardId,
+    { $addToSet: { likes: userId } },
+    { new: true }
+  )
+    .orFail()
+    .then((card) => {
+      res.status(200).send({
+        data: card,
+      });
+    })
+    .catch((err) => {
+      if (err.name === "CastError") {
+        res.status(400).send({
+          message: "Передан некорректный ID карточки",
+        });
+      } else if (err.name === "DocumentNotFoundError") {
+        res.status(404).send({
+          message: "Карточка с таким ID не найдена",
+        });
+      } else {
+        res.status(500).send({
+          message: `Произошла ошибка. Подробнее: ${err.message}`,
+        });
+      }
+    });
 };
 
 module.exports.dislikeCard = async (req, res) => {
-  try {
+  /*try {
     const card = await Card.findByIdAndUpdate(
       req.params.cardId,
       { $pull: { likes: req.user._id } },
@@ -104,5 +131,32 @@ module.exports.dislikeCard = async (req, res) => {
         .status(SERVER_ERROR)
         .json({ message: "На сервере произошла ошибка" });
     }
-  }
+  }*/
+  const userId = req.user._id;
+  Card.findByIdAndUpdate(
+    req.params.cardId,
+    { $pull: { likes: userId } },
+    { new: true }
+  )
+    .orFail()
+    .then((card) => {
+      res.status(200).send({
+        data: card,
+      });
+    })
+    .catch((err) => {
+      if (err.name === "CastError") {
+        res.status(400).send({
+          message: "Передан некорректный ID карточки",
+        });
+      } else if (err.name === "DocumentNotFoundError") {
+        res.status(404).send({
+          message: "Карточка с таким ID не найдена",
+        });
+      } else {
+        res.status(500).send({
+          message: `Произошла ошибка. Подробнее: ${err.message}`,
+        });
+      }
+    });
 };
