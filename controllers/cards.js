@@ -66,23 +66,23 @@ module.exports.likeCard = (req, res) => {
   )
 
     .then((card) => {
-      res.status(200).send({
+      res.status(OK).send({
         data: card,
       });
     })
     .catch((err) => {
       if (err.name === "CastError") {
-        res.status(400).send({
+        res.status(ERROR_CODE).send({
           message: "Передан некорректный ID карточки",
         });
       } else if (err.name === "DocumentNotFoundError") {
-        res.status(404).send({
+        res.status(ERROR_NOT_FOUND).send({
           message: "Карточка с таким ID не найдена",
         });
       } else {
-        res.status(500).send({
-          message: `Произошла ошибка. Подробнее: ${err.message}`,
-        });
+        return res
+          .status(SERVER_ERROR)
+          .json({ message: "На сервере произошла ошибка" });
       }
     });
 };
@@ -96,23 +96,23 @@ module.exports.dislikeCard = (req, res) => {
   )
 
     .then((card) => {
-      res.status(200).send({
+      res.status(OK).send({
         data: card,
       });
     })
     .catch((err) => {
       if (err.name === "CastError") {
-        res.status(400).send({
+        res.status(ERROR_CODE).send({
           message: "Передан некорректный ID карточки",
         });
       } else if (err.name === "DocumentNotFoundError") {
-        res.status(404).send({
+        res.status(ERROR_NOT_FOUND).send({
           message: "Карточка с таким ID не найдена",
         });
       } else {
-        res.status(500).send({
-          message: `Произошла ошибка. Подробнее: ${err.message}`,
-        });
+        return res
+          .status(SERVER_ERROR)
+          .json({ message: "На сервере произошла ошибка" });
       }
     });
 };
