@@ -27,7 +27,9 @@ app.use((req, res, next) => {
 });
 app.use("/cards", require("./routes/cards"));
 app.use("/users", require("./routes/users"));
-
+app.use("*", (req, res) => {
+  res.status(ERROR_NOT_FOUND).send({ message: "Страница не найдена" });
+});
 app.listen(3000, () => {
   console.log(`listening on port ${3000}`);
 });
