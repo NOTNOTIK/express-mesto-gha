@@ -66,7 +66,7 @@ module.exports.likeCard = async (req, res) => {
     );
     return res.status(OK).json(card);
   } catch (err) {
-    if (err.name === "CastError") {
+    if (err.name === "ValidationError") {
       return res.status(ERROR_CODE).send({
         message: "Некорректный ID",
       });
@@ -91,7 +91,7 @@ module.exports.dislikeCard = async (req, res) => {
     );
     return res.status(OK).json(card);
   } catch (err) {
-    if (err.name === "CastError") {
+    if (err.name === "ValidationError") {
       return res.status(ERROR_CODE).send({
         message: "Некорректный ID",
       });
