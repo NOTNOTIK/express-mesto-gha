@@ -19,6 +19,7 @@ module.exports.getCards = async (req, res) => {
 };
 module.exports.deleteCard = (req, res) => {
   Card.findByIdAndDelete(req.params.cardId)
+    .orFail()
     .then((card) => {
       return res.status(OK).json(card);
     })
