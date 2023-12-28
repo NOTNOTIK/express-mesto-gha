@@ -58,28 +58,29 @@ module.exports.createCard = async (req, res) => {
 
 //Я не понимаю, почему оно не проходит автотесты, почему мне вылетает ошибка 400 а не 404. хелп
 module.exports.likeCard = (req, res) => {
+  const userId = req.user._id;
   Card.findByIdAndUpdate(
     req.params.cardId,
-    { $addToSet: { likes: req.user._id } },
+    { $addToSet: { likes: userId } },
     { new: true }
   )
-    .orFail()
+
     .then((card) => {
-      res.status(OK).send({
+      res.status(200).send({
         data: card,
       });
     })
     .catch((err) => {
       if (err.name === "CastError") {
-        res.status(ERROR_CODE).send({
+        res.status(400).send({
           message: "Передан некорректный ID карточки",
         });
       } else if (err.name === "DocumentNotFoundError") {
-        res.status(ERROR_NOT_FOUND).send({
+        res.status(404).send({
           message: "Карточка с таким ID не найдена",
         });
       } else {
-        res.status(SERVER_ERROR).send({
+        res.status(500).send({
           message: `Произошла ошибка. Подробнее: ${err.message}`,
         });
       }
@@ -87,27 +88,29 @@ module.exports.likeCard = (req, res) => {
 };
 
 module.exports.dislikeCard = (req, res) => {
+  const userId = req.user._id;
   Card.findByIdAndUpdate(
     req.params.cardId,
-    { $pull: { likes: req.user._id } },
+    { $pull: { likes: userId } },
     { new: true }
   )
+
     .then((card) => {
-      res.status(OK).send({
+      res.status(200).send({
         data: card,
       });
     })
     .catch((err) => {
       if (err.name === "CastError") {
-        res.status(ERROR_CODE).send({
+        res.status(400).send({
           message: "Передан некорректный ID карточки",
         });
       } else if (err.name === "DocumentNotFoundError") {
-        res.status(ERROR_NOT_FOUND).send({
+        res.status(404).send({
           message: "Карточка с таким ID не найдена",
         });
       } else {
-        res.status(SERVER_ERROR).send({
+        res.status(500).send({
           message: `Произошла ошибка. Подробнее: ${err.message}`,
         });
       }
