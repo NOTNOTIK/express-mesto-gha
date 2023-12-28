@@ -66,11 +66,11 @@ module.exports.likeCard = async (req, res) => {
     );
     return res.status(OK).json(card);
   } catch (err) {
-    if (err.name === "ValidationError") {
+    if (err.name === "CastError") {
       return res.status(ERROR_CODE).send({
         message: "Некорректный ID",
       });
-    } else if (err.name === "NotFoundError") {
+    } else if (err.name === "DocumentNotFoundError") {
       return res.status(ERROR_NOT_FOUND).send({
         message: "Карточка с таким ID не найдена",
       });
@@ -91,14 +91,14 @@ module.exports.dislikeCard = async (req, res) => {
     );
     return res.status(OK).json(card);
   } catch (err) {
-    if (err.name === "ValidationError") {
+    if (err.name === "CastError") {
       return res.status(ERROR_CODE).send({
         message: "Некорректный ID",
       });
-    } else if (err.name === "NotFoundError") {
-      return res.status(ERROR_NOT_FOUND).send({
-        message: "Карточка с таким ID не найдена",
-      });
+    } else if (err.name === "DocumentNotFoundError") {
+      return res
+        .status(ERROR_NOT_FOUND)
+        .send({ message: "Карточка с таким ID не найдена" });
     } else {
       return res
         .status(SERVER_ERROR)

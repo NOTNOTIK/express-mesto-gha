@@ -65,7 +65,7 @@ module.exports.updateUser = async (req, res) => {
   } catch (err) {
     if (err.name === "ValidationError") {
       return res.status(ERROR_CODE).json({ message: "Невалидные данные" });
-    } else if (err.name === "NotFoundError") {
+    } else if (err.name === "DocumentNotFoundError") {
       return res.status(ERROR_NOT_FOUND).json({ message: "ID not found" });
     } else {
       return res
@@ -87,7 +87,7 @@ module.exports.updateUserAvatar = async (req, res) => {
   } catch (err) {
     if (err.name === "ValidationError") {
       return res.status(ERROR_CODE).json({ message: "Невалидные данные" });
-    } else if (err.name === "NotFoundError") {
+    } else if (err.name === "DocumentNotFoundError") {
       return res.status(ERROR_NOT_FOUND).json({ message: "ID not found" });
     } else {
       return res
