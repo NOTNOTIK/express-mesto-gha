@@ -20,11 +20,11 @@ module.exports.getCards = async (req, res) => {
 module.exports.deleteCard = (req, res) => {
   Card.findByIdAndDelete(req.params.id)
     .then((card) => {
-      res.status(OK).send(card);
+      return res.status(OK).send(card);
     })
     .catch((err) => {
       if (err.name === "CastError") {
-        res.status(ERROR_CODE).send({
+        return res.status(ERROR_CODE).send({
           message: "Некорректный ID для удаления карточки",
         });
       } else if (err.name === "DocumentNotFoundError") {
@@ -64,11 +64,11 @@ module.exports.likeCard = async (req, res) => {
       { $addToSet: { likes: req.user._id } },
       { new: true }
     );
-    return res.json(card);
+    return res.status(CREATED_OK).json(card);
   } catch (err) {
-    if (err.name === "CastError") {
-      res.status(ERROR_CODE).send({
-        message: "Передан некорректный ID карточки",
+    if (err.name === "ValidationError") {
+      return res.status(ERROR_CODE).send({
+        message: "Невалидные данные при создании карточки",
       });
     } else if (err.name === "DocumentNotFoundError") {
       res.status(ERROR_NOT_FOUND).send({
@@ -89,14 +89,14 @@ module.exports.dislikeCard = async (req, res) => {
       { $pull: { likes: req.user._id } },
       { new: true }
     );
-    return res.json(card);
+    return res.status(CREATED_OK).json(card);
   } catch (err) {
-    if (err.name === "CastError") {
-      res.status(ERROR_CODE).send({
-        message: "Передан некорректный ID карточки",
+    if (err.name === "ValidationError") {
+      return res.status(ERROR_CODE).send({
+        message: "Невалидные данные при создании карточки",
       });
     } else if (err.name === "DocumentNotFoundError") {
-      res.status(ERROR_NOT_FOUND).send({
+      return res.status(ERROR_NOT_FOUND).send({
         message: "Карточка с таким ID не найдена",
       });
     } else {

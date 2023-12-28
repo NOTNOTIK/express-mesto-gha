@@ -16,15 +16,15 @@ module.exports.getUserById = (req, res) => {
   User.findById(req.params.id)
     .orFail()
     .then((user) => {
-      res.status(OK).send(user);
+      return res.status(OK).send(user);
     })
     .catch((err) => {
       if (err.name === "CastError") {
-        res.status(ERROR_CODE).send({
+        return res.status(ERROR_CODE).send({
           message: "Передан некорректный ID",
         });
       } else if (err.name === "DocumentNotFoundError") {
-        res.status(ERROR_NOT_FOUND).send({
+        return res.status(ERROR_NOT_FOUND).send({
           message: "Пользователь с таким ID не найден",
         });
       } else {
@@ -61,7 +61,7 @@ module.exports.updateUser = async (req, res) => {
       { name, about },
       { new: "true", runValidators: true }
     );
-    return res.json(user);
+    return res.status(OK).send(user);
   } catch (err) {
     if (err.name === "ValidationError") {
       return res.status(ERROR_CODE).json({ message: "Uncorrect ID" });
