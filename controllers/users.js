@@ -1,4 +1,6 @@
 const { OK, SERVER_ERROR, ERROR_CODE, ERROR_NOT_FOUND } = require("../app");
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 const User = require("../models/user");
 
 module.exports.getUsers = async (req, res) => {
@@ -36,15 +38,25 @@ module.exports.getUserById = (req, res) => {
 };
 
 module.exports.createUser = (req, res) => {
-  const { name, about, avatar } = req.body;
-  User.create({ name, about, avatar })
+  const { email, password, name, about, avatar } = req.body;
+  bcrypt
+    .hash(password, 10)
+    .then((hash) =>
+      User.create({
+        name,
+        about,
+        avatar,
+        email,
+        password: hash,
+      })
+    )
     .then((user) => {
       return res.status(OK).json(user);
     })
     .catch((err) => {
-      if (err.name === "ValidationError") {
-        return res.status(ERROR_CODE).json({
-          message: "Невалидные данные при создании пользователя",
+      if (err.code === 11000) {
+        return res.status(409).json({
+          message: "Пользователь с такой почтой уже существует",
         });
       } else {
         return res
@@ -95,4 +107,21 @@ module.exports.updateUserAvatar = async (req, res) => {
         .json({ message: "На сервере произошла ошибка" });
     }
   }
+};
+
+module.exports.login = (req, res) => {
+  const { email, password } = req.body;
+
+  return User.findUserByCredentials(email, password)
+    .then((user) => {
+      res.send({
+        user,
+        token: jwt.sign({ _id: user._id }, "super-strong-secret", {
+          expiresIn: "7d",
+        }),
+      });
+    })
+    .catch((err) => {
+      res.status(401).send({ message: err.message });
+    });
 };
