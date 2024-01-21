@@ -15,6 +15,7 @@ module.exports = {
   OK,
   CREATED_OK,
 };
+
 const { login, createUser } = require("./controllers/users");
 mongoose.connect("mongodb://127.0.0.1:27017/mestodb");
 
@@ -24,9 +25,9 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.post("/signin", login);
 app.post("/signup", createUser);
 
-app.use(auth);
+//app.use(auth);
 app.use("/cards", require("./routes/cards"));
-app.use("/users", require("./routes/users"));
+app.use("/users", auth, require("./routes/users"));
 
 app.use("*", (req, res) => {
   res.status(ERROR_NOT_FOUND).send({ message: "Страница не найдена" });

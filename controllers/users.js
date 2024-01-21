@@ -2,7 +2,7 @@ const { OK, SERVER_ERROR, ERROR_CODE, ERROR_NOT_FOUND } = require("../app");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const User = require("../models/user");
-
+const { NODE_ENV, JWT_SECRET } = process.env;
 module.exports.getUsers = async (req, res) => {
   try {
     const users = await User.find({});
@@ -109,7 +109,32 @@ module.exports.updateUserAvatar = async (req, res) => {
   }
 };
 
-module.exports.login = (req, res) => {
+module.exports.login = async (req, res) => {
+  const { email, password } = req.body || {};
+  try {
+    const userAdmin = await User.findOne({ email }).select("+password");
+    console.log(userAdmin);
+    const matched = await bcrypt.compare(password, userAdmin.password);
+    if (!matched) {
+      throw new Error("NotAuthenticate");
+    }
+
+    return res.status(200).send({
+      data: { email: userAdmin.email, id: userAdmin._id },
+      token: jwt.sign(
+        { _id: userAdmin._id },
+        NODE_ENV === "production" ? JWT_SECRET : "super-strong-secret",
+        {
+          expiresIn: "7d",
+        }
+      ),
+    });
+  } catch (err) {
+    return res.status(500).send(err);
+  }
+};
+
+/*module.exports.login = (req, res) => {
   const { email, password } = req.body;
 
   return User.findUserByCredentials(email, password)
@@ -125,3 +150,4 @@ module.exports.login = (req, res) => {
       res.status(401).send({ message: err.message });
     });
 };
+*/
