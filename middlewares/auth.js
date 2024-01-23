@@ -1,11 +1,12 @@
 const jwt = require("jsonwebtoken");
 const { NODE_ENV, JWT_SECRET } = process.env;
+const AuthError = require("../errors/AuthError.js"); // 401
 module.exports = (req, res, next) => {
   let payload;
   try {
     const token = req.headers.authorization;
     if (!token) {
-      throw new Error("NotAuthenticated");
+      return next(new AuthError("NotAuthenticated"));
     }
 
     const validToken = token.replace("Bearer ", "");
@@ -16,13 +17,13 @@ module.exports = (req, res, next) => {
     );
   } catch (error) {
     if (error.message === "NotAuthenticated") {
-      return res.status(401).send({ message: "Неправильные email или пароль" });
+      return next(new AuthError("Неправильные email или пароль"));
     }
-    if (error.тфьу === "JsonWebTokenError") {
-      return res.status(401).send({ message: "С токеном что-то не так" });
+    if (error.name === "JsonWebTokenError") {
+      return next(new AuthError("С токеном что-то не так"));
     }
 
-    return res.status(500).send(error);
+    return next(error);
   }
   req.user = payload;
   next();

@@ -1,20 +1,22 @@
-const { OK, SERVER_ERROR, ERROR_CODE, ERROR_NOT_FOUND } = require("../app");
+const { OK } = require("../app");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const User = require("../models/user");
 const { NODE_ENV, JWT_SECRET } = process.env;
-module.exports.getUsers = async (req, res) => {
+const NotFoundError = require("../errors/NotFoundError.js"); // 404
+const BadRequestError = require("../errors/BadRequestError.js"); // 400
+const ConflictError = require("../errors/ConflictError.js"); // 409
+const AuthError = require("../errors/AuthError.js"); // 401
+module.exports.getUsers = async (req, res, next) => {
   try {
     const users = await User.find({});
     return res.status(OK).json(users);
   } catch (err) {
-    return res
-      .status(SERVER_ERROR)
-      .json({ message: "На сервере произошла ошибка" });
+    return next(err);
   }
 };
 
-module.exports.getUserById = (req, res) => {
+module.exports.getUserById = (req, res, next) => {
   User.findById(req.params.id)
     .orFail()
     .then((user) => {
@@ -22,22 +24,30 @@ module.exports.getUserById = (req, res) => {
     })
     .catch((err) => {
       if (err.name === "CastError") {
-        return res.status(ERROR_CODE).send({
-          message: "Передан некорректный ID",
-        });
+        return next(new BadRequestError("ID not found"));
       } else if (err.name === "DocumentNotFoundError") {
-        return res.status(ERROR_NOT_FOUND).send({
-          message: "Пользователь с таким ID не найден",
-        });
-      } else {
-        return res
-          .status(SERVER_ERROR)
-          .json({ message: "На сервере произошла ошибка" });
+        return next(new NotFoundError("Пользователь с таким ID не найден"));
       }
+      return next(err);
     });
 };
-
-module.exports.createUser = (req, res) => {
+module.exports.getOneUser = (req, res, next) => {
+  User.findById(req.params.id)
+    .then((user) => {
+      if (!user) {
+        return next(new NotFoundError("Пользователь с таким ID не найден"));
+      }
+      const { email, name, about, avatar, _id } = req.body;
+      return res.status(OK).send({ name, about, avatar, email, _id });
+    })
+    .catch((err) => {
+      if (err.name === "CastError") {
+        return next(new BadRequestError("ID not found"));
+      }
+      return next(err);
+    });
+};
+module.exports.createUser = (req, res, next) => {
   const { email, password, name, about, avatar } = req.body;
   bcrypt
     .hash(password, 10)
@@ -55,17 +65,14 @@ module.exports.createUser = (req, res) => {
     })
     .catch((err) => {
       if (err.code === 11000) {
-        return res.status(409).json({
-          message: "Пользователь с такой почтой уже существует",
-        });
-      } else {
-        return res
-          .status(SERVER_ERROR)
-          .json({ message: "На сервере произошла ошибка" });
+        return next(
+          new ConflictError("Пользователь с таким email уже существует")
+        );
       }
+      return next(err);
     });
 };
-module.exports.updateUser = async (req, res) => {
+module.exports.updateUser = async (req, res, next) => {
   try {
     const { name, about } = req.body;
     const user = await User.findByIdAndUpdate(
@@ -76,18 +83,15 @@ module.exports.updateUser = async (req, res) => {
     return res.status(OK).send(user);
   } catch (err) {
     if (err.name === "ValidationError") {
-      return res.status(ERROR_CODE).json({ message: "Невалидные данные" });
+      return next(new BadRequestError("Невалидные данные"));
     } else if (err.name === "DocumentNotFoundError") {
-      return res.status(ERROR_NOT_FOUND).json({ message: "ID not found" });
-    } else {
-      return res
-        .status(SERVER_ERROR)
-        .json({ message: "На сервере произошла ошибка" });
+      return next(new NotFoundError("ID not found"));
     }
+    return next(err);
   }
 };
 
-module.exports.updateUserAvatar = async (req, res) => {
+module.exports.updateUserAvatar = async (req, res, next) => {
   try {
     const { avatar } = req.body;
     const user = await User.findByIdAndUpdate(
@@ -98,25 +102,22 @@ module.exports.updateUserAvatar = async (req, res) => {
     return res.status(OK).send(user);
   } catch (err) {
     if (err.name === "ValidationError") {
-      return res.status(ERROR_CODE).json({ message: "Невалидные данные" });
+      return next(new BadRequestError("Невалидные данные"));
     } else if (err.name === "DocumentNotFoundError") {
-      return res.status(ERROR_NOT_FOUND).json({ message: "ID not found" });
-    } else {
-      return res
-        .status(SERVER_ERROR)
-        .json({ message: "На сервере произошла ошибка" });
+      return next(new NotFoundError("ID not found"));
     }
+    return next(err);
   }
 };
 
-module.exports.login = async (req, res) => {
+module.exports.login = async (req, res, next) => {
   const { email, password } = req.body || {};
   try {
     const userAdmin = await User.findOne({ email }).select("+password");
     console.log(userAdmin);
     const matched = await bcrypt.compare(password, userAdmin.password);
     if (!matched) {
-      throw new Error("NotAuthenticate");
+      return next(new AuthError("NotAuthenticate"));
     }
 
     return res.status(200).send({
@@ -130,24 +131,6 @@ module.exports.login = async (req, res) => {
       ),
     });
   } catch (err) {
-    return res.status(500).send(err);
+    return next(err);
   }
 };
-
-/*module.exports.login = (req, res) => {
-  const { email, password } = req.body;
-
-  return User.findUserByCredentials(email, password)
-    .then((user) => {
-      res.send({
-        user,
-        token: jwt.sign({ _id: user._id }, "super-strong-secret", {
-          expiresIn: "7d",
-        }),
-      });
-    })
-    .catch((err) => {
-      res.status(401).send({ message: err.message });
-    });
-};
-*/
