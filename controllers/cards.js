@@ -7,14 +7,12 @@ const {
 } = require("../app");
 const Card = require("../models/card");
 
-module.exports.getCards = async (req, res) => {
+module.exports.getCards = async (req, res, next) => {
   try {
     const cards = await Card.find({});
     return res.status(OK).json(cards);
   } catch (err) {
-    return res
-      .status(SERVER_ERROR)
-      .json({ message: "На сервере произошла ошибка" });
+    return next(err);
   }
 };
 module.exports.deleteCard = (req, res) => {
