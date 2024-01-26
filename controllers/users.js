@@ -3,6 +3,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const User = require("../models/user");
 const { NODE_ENV, JWT_SECRET } = process.env;
+const { findUserByCredentials } = require("../models/user.js");
 const NotFoundError = require("../errors/NotFoundError.js"); // 404
 const BadRequestError = require("../errors/BadRequestError.js"); // 400
 const ConflictError = require("../errors/ConflictError.js"); // 409
@@ -32,16 +33,20 @@ module.exports.getUserById = (req, res, next) => {
     });
 };
 module.exports.getOneUser = (req, res, next) => {
-  User.findById(req.params.id)
+  User.findById(req.params._id)
     .orFail()
     .then((user) => {
       if (!user) {
         return next(new NotFoundError("Пользователь с таким ID не найден"));
       }
-      const { email, name, about, avatar, _id } = req.body;
-      return res.status(OK).send({ name, about, avatar, email, _id });
+      //const { _id, name, about, avatar, email } = user;
+      //return res.status(200).json({ _id, name, about, avatar, email });
+      return res.status(200).send(user);
     })
     .catch((err) => {
+      if (err.name === "CastError") {
+        return next(new BadRequestError("Неккоректный id"));
+      }
       return next(err);
     });
 };
@@ -112,7 +117,9 @@ module.exports.updateUserAvatar = async (req, res, next) => {
 module.exports.login = async (req, res, next) => {
   const { email, password } = req.body || {};
   try {
-    const userAdmin = await User.findOne({ email }).select("+password");
+    const userAdmin = await User.findUserByCredentials({ email }).select(
+      "+password"
+    );
     console.log(userAdmin);
     const matched = await bcrypt.compare(password, userAdmin.password);
     if (!matched) {

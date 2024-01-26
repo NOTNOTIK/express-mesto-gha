@@ -1,12 +1,12 @@
 const {
   OK,
-  SERVER_ERROR,
-  ERROR_CODE,
-  ERROR_NOT_FOUND,
+
   CREATED_OK,
 } = require("../app");
 const Card = require("../models/card");
-
+const NotFoundError = require("../errors/NotFoundError.js"); // 404
+const BadRequestError = require("../errors/BadRequestError.js"); // 400
+const UserError = require("../errors/UserError.js"); // 403
 module.exports.getCards = async (req, res, next) => {
   try {
     const cards = await Card.find({});
@@ -15,48 +15,47 @@ module.exports.getCards = async (req, res, next) => {
     return next(err);
   }
 };
-module.exports.deleteCard = (req, res) => {
-  Card.findByIdAndDelete(req.params.cardId)
+module.exports.deleteCard = (req, res, next) => {
+  Card.findById(req.params.cardId)
     .orFail()
     .then((card) => {
+      if (!card) {
+        return next(new NotFoundError("Карточка найдена"));
+      }
+      if (card.owner.toString() !== req.user._id) {
+        return next(new UserError("Вы не можете удалить чужую карточку"));
+      }
+      Card.findByIdAndDelete(req.params.cardId);
       return res.status(OK).json(card);
     })
     .catch((err) => {
       if (err.name === "CastError") {
-        return res.status(ERROR_CODE).json({
-          message: "Некорректный ID для удаления карточки",
-        });
+        return next(
+          new BadRequestError("Некорректный ID для удаления карточки")
+        );
       } else if (err.name === "DocumentNotFoundError") {
-        return res.status(ERROR_NOT_FOUND).json({
-          message: "Карточка с таким ID не найдена",
-        });
-      } else {
-        return res
-          .status(SERVER_ERROR)
-          .json({ message: "На сервере произошла ошибка" });
+        return next(new NotFoundError("Карточка с таким ID не найдена"));
       }
+      return next(err);
     });
 };
-module.exports.createCard = async (req, res) => {
+module.exports.createCard = async (req, res, next) => {
   try {
     const { name, link } = req.body;
     const card = await Card.create({ name, link, owner: req.user._id });
     return res.status(CREATED_OK).json(card);
   } catch (err) {
     if (err.name === "ValidationError") {
-      return res.status(ERROR_CODE).send({
-        message: "Невалидные данные при создании карточки",
-      });
-    } else {
-      return res
-        .status(SERVER_ERROR)
-        .json({ message: "На сервере произошла ошибка" });
+      return next(
+        new BadRequestError("Невалидные данные при создании карточки")
+      );
     }
+    return next(err);
   }
 };
 
 //Я не понимаю, почему оно не проходит автотесты, почему мне вылетает ошибка 400 а не 404. хелп
-module.exports.likeCard = (req, res) => {
+module.exports.likeCard = (req, res, next) => {
   const userId = req.user._id;
   Card.findByIdAndUpdate(
     req.params.cardId,
@@ -71,22 +70,15 @@ module.exports.likeCard = (req, res) => {
     })
     .catch((err) => {
       if (err.name === "CastError") {
-        res.status(ERROR_CODE).send({
-          message: "Передан некорректный ID карточки",
-        });
+        return next(new BadRequestError("Передан некорректный ID карточки"));
       } else if (err.name === "DocumentNotFoundError") {
-        res.status(ERROR_NOT_FOUND).send({
-          message: "Карточка с таким ID не найдена",
-        });
-      } else {
-        return res
-          .status(SERVER_ERROR)
-          .json({ message: "На сервере произошла ошибка" });
+        return next(new NotFoundError("Карточка с таким ID не найдена"));
       }
+      return next(err);
     });
 };
 
-module.exports.dislikeCard = (req, res) => {
+module.exports.dislikeCard = (req, res, next) => {
   const userId = req.user._id;
   Card.findByIdAndUpdate(
     req.params.cardId,
@@ -101,17 +93,10 @@ module.exports.dislikeCard = (req, res) => {
     })
     .catch((err) => {
       if (err.name === "CastError") {
-        res.status(ERROR_CODE).send({
-          message: "Передан некорректный ID карточки",
-        });
+        return next(new BadRequestError("Передан некорректный ID карточки"));
       } else if (err.name === "DocumentNotFoundError") {
-        res.status(ERROR_NOT_FOUND).send({
-          message: "Карточка с таким ID не найдена",
-        });
-      } else {
-        return res
-          .status(SERVER_ERROR)
-          .json({ message: "На сервере произошла ошибка" });
+        return next(new NotFoundError("Карточка с таким ID не найдена"));
       }
+      return next(err);
     });
 };

@@ -8,7 +8,6 @@ const ERROR_NOT_FOUND = 404;
 const OK = 200;
 const CREATED_OK = 201;
 const auth = require("./middlewares/auth");
-const { celebrate, Joi } = require("celebrate");
 const NotFoundError = require("./errors/NotFoundError.js"); // 404
 module.exports = {
   ERROR_CODE,
@@ -17,33 +16,18 @@ module.exports = {
   OK,
   CREATED_OK,
 };
-
+const {
+  validationCreateUser,
+  validationLogin,
+} = require("./middlewares/validation.js");
 const { login, createUser } = require("./controllers/users");
 mongoose.connect("mongodb://127.0.0.1:27017/mestodb");
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-app.post(
-  "/signin",
-  celebrate({
-    body: Joi.object().keys({
-      email: Joi.string().required().email(),
-      password: Joi.string().required().min(2),
-    }),
-  }),
-  login
-);
-app.post(
-  "/signup",
-  celebrate({
-    body: Joi.object().keys({
-      email: Joi.string().required().email(),
-      password: Joi.string().required().min(2),
-    }),
-  }),
-  createUser
-);
+app.post("/signin", validationLogin, login);
+app.post("/signup", validationCreateUser, createUser);
 
 app.use(auth);
 app.use("/cards", require("./routes/cards"));
