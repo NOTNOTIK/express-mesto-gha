@@ -3,7 +3,6 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const User = require("../models/user");
 const { NODE_ENV, JWT_SECRET } = process.env;
-const { findUserByCredentials } = require("../models/user.js");
 const NotFoundError = require("../errors/NotFoundError.js"); // 404
 const BadRequestError = require("../errors/BadRequestError.js"); // 400
 const ConflictError = require("../errors/ConflictError.js"); // 409
@@ -39,8 +38,6 @@ module.exports.getOneUser = (req, res, next) => {
       if (!user) {
         return next(new NotFoundError("Пользователь с таким ID не найден"));
       }
-      //const { _id, name, about, avatar, email } = user;
-      //return res.status(200).json({ _id, name, about, avatar, email });
       return res.status(200).send(user);
     })
     .catch((err) => {
@@ -54,7 +51,6 @@ module.exports.createUser = (req, res, next) => {
   const { email, password, name, about, avatar } = req.body;
   bcrypt
     .hash(password, 10)
-
     .then((hash) =>
       User.create({
         name,
@@ -76,50 +72,52 @@ module.exports.createUser = (req, res, next) => {
       return next(err);
     });
 };
-module.exports.updateUser = async (req, res, next) => {
-  try {
-    const { name, about } = req.body;
-    const user = await User.findByIdAndUpdate(
-      req.user._id,
-      { name, about },
-      { new: "true", runValidators: true }
-    );
-    return res.status(OK).send(user);
-  } catch (err) {
-    if (err.name === "ValidationError") {
-      return next(new BadRequestError("Невалидные данные"));
-    } else if (err.name === "DocumentNotFoundError") {
-      return next(new NotFoundError("ID not found"));
-    }
-    return next(err);
-  }
+module.exports.updateUser = (req, res, next) => {
+  const { name, about } = req.body
+    .orFail()
+    .then((user) => {
+      User.findByIdAndUpdate(
+        req.user._id,
+        { name, about },
+        { new: "true", runValidators: true }
+      );
+      return res.status(OK).send(user);
+    })
+    .catch((err) => {
+      if (err.name === "ValidationError") {
+        return next(new BadRequestError("Невалидные данные"));
+      } else if (err.name === "DocumentNotFoundError") {
+        return next(new NotFoundError("ID not found"));
+      }
+      return next(err);
+    });
 };
 
-module.exports.updateUserAvatar = async (req, res, next) => {
-  try {
-    const { avatar } = req.body;
-    const user = await User.findByIdAndUpdate(
-      req.user._id,
-      { avatar },
-      { new: "true", runValidators: true }
-    );
-    return res.status(OK).send(user);
-  } catch (err) {
-    if (err.name === "ValidationError") {
-      return next(new BadRequestError("Невалидные данные"));
-    } else if (err.name === "DocumentNotFoundError") {
-      return next(new NotFoundError("ID not found"));
-    }
-    return next(err);
-  }
+module.exports.updateUserAvatar = (req, res, next) => {
+  const { avatar } = req.body
+    .orFail()
+    .then((user) => {
+      User.findByIdAndUpdate(
+        req.user._id,
+        { avatar },
+        { new: "true", runValidators: true }
+      );
+      return res.status(OK).send(user);
+    })
+    .catch((err) => {
+      if (err.name === "ValidationError") {
+        return next(new BadRequestError("Невалидные данные"));
+      } else if (err.name === "DocumentNotFoundError") {
+        return next(new NotFoundError("ID not found"));
+      }
+      return next(err);
+    });
 };
 
 module.exports.login = async (req, res, next) => {
   const { email, password } = req.body || {};
   try {
-    const userAdmin = await User.findUserByCredentials({ email }).select(
-      "+password"
-    );
+    const userAdmin = await User.findOne({ email }).select("+password");
     console.log(userAdmin);
     const matched = await bcrypt.compare(password, userAdmin.password);
     if (!matched) {

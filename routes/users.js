@@ -9,9 +9,10 @@ const {
 const {
   validationUserInfo,
   validationUserAvatar,
+  validationUserId,
 } = require("../middlewares/validation.js");
 userRouter.get("/", getUsers);
-userRouter.get("/:id", getUserById);
+userRouter.get("/:id", validationUserId, getUserById);
 userRouter.get("/me", getOneUser);
 userRouter.patch("/me", validationUserInfo, updateUser);
 userRouter.patch("/me/avatar", validationUserAvatar, updateUserAvatar);

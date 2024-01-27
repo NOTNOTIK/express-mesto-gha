@@ -38,3 +38,13 @@ module.exports.validationCard = celebrate({
     link: Joi.string().required().pattern(validURL),
   }),
 });
+module.exports.validationCardId = celebrate({
+  params: Joi.object().keys({
+    cardId: Joi.string().hex().required().length(24),
+  }),
+});
+module.exports.validationUserId = celebrate({
+  params: Joi.object().keys({
+    userId: Joi.string().hex().required().length(24),
+  }),
+});
